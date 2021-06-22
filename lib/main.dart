@@ -68,23 +68,26 @@ class _MainPageState extends State<MainPage> {
           return ListView(
             children: surveys
                 .map(
-                  (Survey survey) => Center(
+                  (Survey survey) => InkWell(
                     child: Card(
-                      child: InkWell(
-                        splashColor: Colors.blue.withAlpha(232),
-                        onTap: () => Navigator.of(context).push(
-                          MaterialPageRoute(
-                              builder: (context) => SurveyDetail(
-                                    survey: survey,
-                                  )),
-                        ), // onTap
-                        child: const SizedBox(
-                          // width: 300,
-                          height: 50,
-                          child: Text("${survey.name}"),
+                      child: Center(
+                        child: Padding(
+                          child: Text("${survey.name}",
+                              style: TextStyle(
+                                  color: Colors.blue[900],
+                                  fontWeight: FontWeight.w500)),
+                          padding: EdgeInsets.fromLTRB(20, 20, 20, 20),
                         ),
                       ),
+                      color: Colors.white,
+                      elevation: 5,
                     ),
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute(
+                          builder: (context) => SurveyDetail(
+                                survey: survey,
+                              )),
+                    ), // onTap
                   ),
                 )
                 .toList(),
