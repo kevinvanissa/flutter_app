@@ -10,64 +10,83 @@ import 'package:geolocator/geolocator.dart';
 import 'package:flutter_app/my_geolocation.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:flutter_app/db_nosql.dart';
+import 'package:flutter_app/components/ResponseType.dart';
 
-class SurveyQuestionsDetail extends StatelessWidget {
+class SurveyQuestionsDetail extends StatefulWidget {
   final List<Question> questions;
   final int surveyid;
+  final String surveyname;
+  double val = 0;
+
+  SurveyQuestionsDetail(
+      {@required this.questions,
+      @required this.surveyid,
+      @required this.surveyname});
+
+  @override
+  _SurveyQuestionsDetailState createState() => _SurveyQuestionsDetailState();
+}
+
+class _SurveyQuestionsDetailState extends State<SurveyQuestionsDetail> {
   final Selection selection = Selection();
+
   final HttpService httpService = HttpService();
+
   final MyGeolocation mygeo = MyGeolocation();
+
   final dbHelperNosql = AppDatabase.instance;
 
-  SurveyQuestionsDetail({
-    @required this.questions,
-    @required this.surveyid,
-  });
-  //SurveyQuestionsDetail({@required this.questions, @required this.surveyid});
+  // double val = 3;
+
+  stateChange(_val) {
+    setState(() {
+      print("VAL: ${_val}");
+      widget.val = _val;
+    });
+  }
 
   makeQuestionsCards(BuildContext context) {
-    //set default values for selection
-    //selection.selection["lat"] = "0.000000";
-    //selection.selection["lon"] = "0.000000";
-
     selection.createInitialValues(
         {"lat": "0.000000", "lon": "0.000000", "sid": 0, "uid": 0});
-    List<RadioButton> rb = new List();
-    List<Widget> wl = new List();
+    List<RadioButton> rb = [];
+    List<Widget> wl = [];
 
-    //list = new List<Widget>();
-    /*    selection.list = questions
-        .map(
-          (Question question) => Card(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget>[
-                ListTile(
-                  title: Text("ID"),
-                  subtitle: Text("${question.id}"),
-                ),
-                RadioButton(question, selection),
-              ],
-            ),
-          ),
-        )
-        .toList(); */
-    //return list;
-
-    for (int i = 0; i < questions.length; i++) {
-      rb.add(RadioButton(questions[i], selection));
+    print(widget.questions.length);
+    for (int i = 0; i < widget.questions.length; i++) {
+      rb.add(RadioButton(widget.questions[i], selection));
     }
 
-    for (int i = 0; i < questions.length; i++) {
+    for (int i = 0; i < widget.questions.length; i++) {
+      print("title: ${widget.questions[i].title}");
+      print("type: ${widget.questions[i].type}");
       wl.add(Card(
+        key: UniqueKey(),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
             ListTile(
-              title: Text("ID"),
-              subtitle: Text("${questions[i].id}"),
+              title: Text("Question ${i + 1}"),
             ),
-            rb[i],
+            ListTile(
+              title: Text(widget.questions[i].title),
+            ),
+            SizedBox(
+                child: ResponseType(widget.questions[i].type,
+                    val: widget.val,
+                    min: 0,
+                    divisions: 5,
+                    max: 5,
+                    text: widget.questions[i].title,
+                    update: stateChange)
+                // .getType(widget.questions[i].type,
+                // val: val,
+                // min: 0,
+                // divisions: 5,
+                // max: 5,
+                // text: widget.questions[i].title,
+                // update: stateChange)
+                ),
+            // ),
           ],
         ),
       ));
@@ -131,18 +150,13 @@ class SurveyQuestionsDetail extends StatelessWidget {
                   _currentPosition = val;
                   var lat_p = val.latitude.toString();
                   var lon_p = val.longitude.toString();
-
                   tf_lat.controller.text = lat_p;
                   tf_lon.controller.text = lon_p;
                   selection.selection["lat"] = lat_p;
                   selection.selection["lon"] = lon_p;
-
-                  //print(lat_p);
-
-                  //print(_currentPosition.latitude);
                 });
               },
-              color: Colors.lightGreen,
+              color: Colors.blue,
               textColor: Colors.white,
               padding: EdgeInsets.fromLTRB(5, 3, 5, 3),
               splashColor: Colors.grey,
@@ -153,31 +167,27 @@ class SurveyQuestionsDetail extends StatelessWidget {
             RaisedButton(
               child: Text("Save this Survey"),
               onPressed: () async {
-                //  if (questions.length == selection.diffMaps()) {
-
-                if (selection.checkPressedAll(questions.length)) {
-                  selection.selection["sid"] = surveyid;
+                if (selection.checkPressedAll(widget.questions.length)) {
+                  selection.selection["sid"] = widget.surveyid;
                   getUserId()
                       .then((value) => selection.selection["uid"] = value);
                   print("Selection: ${selection.selection}");
-
                   if (!await httpService.isConnected()) {
                     //Try insert the response in sembast when no connection
                     dbHelperNosql.insertResponse(selection.selection);
                     Toast.show(
-                        "Not connection. Operating in offline mode", context,
-                        duration: Toast.LENGTH_LONG, gravity: Toast.CENTER);
+                        "No internet connection. Operating in offline mode",
+                        context,
+                        duration: Toast.LENGTH_LONG,
+                        gravity: Toast.CENTER);
                     Navigator.of(context).push(
                       MaterialPageRoute(
                         builder: (context) => MyApp(),
                       ),
                     );
                   }
-
                   final code =
                       await httpService.saveSurvey(selection.selection);
-                  //final code = 1;
-
                   if (code.compareTo(1) == 0) {
                     Toast.show("Survey Succesfully Saved.", context,
                         duration: Toast.LENGTH_LONG, gravity: Toast.CENTER);
@@ -192,9 +202,6 @@ class SurveyQuestionsDetail extends StatelessWidget {
                         duration: Toast.LENGTH_LONG, gravity: Toast.CENTER);
                   }
                 } else {
-                  //print("selection: ${selection.selection}");
-                  //getUserId().then((value) => print(value));
-                  // print(selection.diffMaps());
                   Toast.show("Need to fill out all fields", context,
                       duration: Toast.LENGTH_LONG, gravity: Toast.CENTER);
                 }
@@ -208,12 +215,9 @@ class SurveyQuestionsDetail extends StatelessWidget {
         ),
       )
     ];
-    // rbuttons.addAll(otherWidgets);
-    //print("sdfsdfsfs======>");
-    //print(selection.list);
     return Scaffold(
         appBar: AppBar(
-          title: Text("Survey"),
+          title: Text(widget.surveyname),
         ),
         body: SingleChildScrollView(
           child: Padding(

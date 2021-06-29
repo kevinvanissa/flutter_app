@@ -16,7 +16,6 @@ class SurveyDetail extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     SharedPreferences sharedPreferences;
-
     return Scaffold(
         appBar: AppBar(
           title: Text(survey.name),
@@ -48,10 +47,10 @@ class SurveyDetail extends StatelessWidget {
                         title: Text("Name"),
                         subtitle: Text(survey.name),
                       ),
-                      ListTile(
-                        title: Text("ID"),
-                        subtitle: Text("${survey.id}"),
-                      ),
+                      // ListTile(
+                      //   title: Text("ID"),
+                      //   subtitle: Text("${survey.id}"),
+                      // ),
                       ListTile(
                         title: Text("Description"),
                         subtitle: Text(survey.description),
@@ -61,9 +60,9 @@ class SurveyDetail extends StatelessWidget {
                         onPressed: () => Navigator.of(context).push(
                           MaterialPageRoute(
                             builder: (context) => SurveyQuestionsDetail(
-                              questions: survey.questions,
-                              surveyid: survey.id,
-                            ),
+                                questions: survey.questions,
+                                surveyid: survey.id,
+                                surveyname: survey.name),
                           ),
                         ),
                         // color: Colors.lightBlue,
