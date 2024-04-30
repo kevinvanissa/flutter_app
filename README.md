@@ -1,6 +1,6 @@
-# flutter_app
+# Survey Creator flutter_app
 
-A new Flutter application.
+A Flutter application to create surveys. This was just to explore the use of Flutter for projects.
 
 ## Getting Started
 
